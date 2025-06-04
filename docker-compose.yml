@@ -1,50 +1,37 @@
-################################################################
-# ~/BillionMail/docker-compose.yml
-#
-# - Automatically initializes Postgres with a database/user via init.sql
-# - Adds a “composer” service to run `composer install` on ./core (if you need it)
-# - Waits for Postgres to be fully ready before starting core-billionmail
-# - Relies on an existing external network named “coolify”
-################################################################
-
 version: "3.8"
 
 services:
 
   ##############################################################################
-  # 1) PostgreSQL: automatically create DB, user, and grant privileges via init.sql
+  # 1) PostgreSQL: creates two DBs: billionmail & roundcube, same user/password
   ##############################################################################
   pgsql-billionmail:
     image: postgres:17.4-alpine
     container_name: billionmail-pgsql-billionmail-1
     hostname: pgsql
     volumes:
-      # Persist data
       - ./postgresql-data:/var/lib/postgresql/data
-      # Expose the init script so Postgres can run it once
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-      # (Optionally) provide a Unix socket—BillionMail might use it if configured
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql   # See new init.sql below!
       - ./postgresql-socket:/var/run/postgresql
     environment:
       - TZ=${TZ}
-      - POSTGRES_DB=${DBNAME}
+      - POSTGRES_DB=billionmail         # Initial db for healthcheck; see init.sql
       - POSTGRES_USER=${DBUSER}
       - POSTGRES_PASSWORD=${DBPASS}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DBUSER} -d ${DBNAME}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DBUSER} -d billionmail"]
       interval: 5s
       timeout: 5s
       retries: 5
       start_period: 10s
     restart: always
     ports:
-      # Listen on localhost:25432 → container 5432, so only local apps can connect
       - "${SQL_PORT:-127.0.0.1:25432}:5432"
     networks:
       - coolify
 
   ##############################################################################
-  # 2) Redis: for caching/queueing (used by BillionMail)
+  # 2) Redis (unchanged)
   ##############################################################################
   redis-billionmail:
     image: redis:7.4.2-alpine
@@ -61,13 +48,12 @@ services:
       - net.core.somaxconn=4096
     restart: always
     ports:
-      # Map localhost:26379 → container 6379
       - "${REDIS_PORT:-127.0.0.1:26379}:6379"
     networks:
       - coolify
 
   ##############################################################################
-  # 3) Rspamd: spam filtering
+  # 3) Rspamd (unchanged)
   ##############################################################################
   rspamd-billionmail:
     image: billionmail/rspamd:1.1
@@ -89,7 +75,7 @@ services:
       - coolify
 
   ##############################################################################
-  # 4) Dovecot: IMAP/POP3 server
+  # 4) Dovecot (unchanged)
   ##############################################################################
   dovecot-billionmail:
     image: billionmail/dovecot:1.3
@@ -111,7 +97,7 @@ services:
       - ./rspamd-data:/var/lib/rspamd
       - ./postgresql-socket:/var/run/postgresql
     environment:
-      - DBNAME=${DBNAME}
+      - DBNAME=billionmail
       - DBUSER=${DBUSER}
       - DBPASS=${DBPASS}
       - TZ=${TZ}
@@ -132,7 +118,7 @@ services:
       - coolify
 
   ##############################################################################
-  # 5) Postfix: SMTP/MTA
+  # 5) Postfix (unchanged, points to billionmail)
   ##############################################################################
   postfix-billionmail:
     image: billionmail/postfix:1.3
@@ -154,7 +140,7 @@ services:
       - ./postgresql-socket:/var/run/postgresql
     environment:
       - TZ=${TZ}
-      - DBNAME=${DBNAME}
+      - DBNAME=billionmail
       - DBUSER=${DBUSER}
       - DBPASS=${DBPASS}
       - REDISPASS=${REDISPASS}
@@ -170,7 +156,7 @@ services:
       - coolify
 
   ##############################################################################
-  # 6) Roundcube webmail (PHP)
+  # 6) Roundcube webmail (now uses roundcube DB)
   ##############################################################################
   webmail-billionmail:
     image: roundcube/roundcubemail:1.6.10-apache
@@ -190,7 +176,7 @@ services:
       - TZ=${TZ}
       - ROUNDCUBEMAIL_DB_TYPE=pgsql
       - ROUNDCUBEMAIL_DB_HOST=pgsql
-      - ROUNDCUBEMAIL_DB_NAME=${DBNAME}
+      - ROUNDCUBEMAIL_DB_NAME=roundcube      # <---- NEW DB
       - ROUNDCUBEMAIL_DB_USER=${DBUSER}
       - ROUNDCUBEMAIL_DB_PASSWORD=${DBPASS}
       - ROUNDCUBEMAIL_DEFAULT_HOST=dovecot
@@ -203,7 +189,7 @@ services:
       - coolify
 
   ##############################################################################
-  # 7) BillionMail core (HTTP managed by Traefik)
+  # 7) BillionMail core (no DB change)
   ##############################################################################
   core-billionmail:
     image: billionmail/core:1.5
@@ -246,9 +232,7 @@ services:
       - coolify
 
   ##############################################################################
-  # 8) Composer service (runs `composer install` against ./core if you develop
-  #    BillionMail locally; you can remove/comment out once you’ve built
-  #    or uploaded your vendor directory)
+  # 8) Composer (unchanged)
   ##############################################################################
   composer:
     image: composer:2
@@ -257,8 +241,6 @@ services:
     volumes:
       - ./core:/app
     command: ["install"]
-    # You can run `docker-compose run composer` whenever you need to refresh 
-    # your PHP dependencies. This service does not stay running.
     networks:
       - coolify
 
