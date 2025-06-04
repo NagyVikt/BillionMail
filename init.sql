@@ -1,18 +1,24 @@
+-- ~/BillionMail/init.sql
 
---  domain 
+-- Create the “billionmail” role and set its password (must match DBUSER/DBPASS in .env)
+CREATE USER billionmail WITH ENCRYPTED PASSWORD 'NauF7ysRYyt9HTOiOn4JjIAL3QcRZnzj';
+
+-- Create the “billionmail” database owned by that role
+CREATE DATABASE billionmail OWNER billionmail;
+
+-- Create your schema (domain, mailbox, alias, alias_domain tables):
 CREATE TABLE IF NOT EXISTS domain (
     domain varchar(255) NOT NULL,
     a_record varchar(255) NOT NULL DEFAULT '',
-    mailboxes int NOT NULL DEFAULT 50,                       -- Number of emails created
-    mailbox_quota BIGINT NOT NULL DEFAULT 5368709120,        -- Default space size of mailbox
-    quota BIGINT NOT NULL DEFAULT 10737418240,               -- Domain name quota
-    rate_limit INT DEFAULT 12,                               -- How many emails per second
+    mailboxes int NOT NULL DEFAULT 50,
+    mailbox_quota BIGINT NOT NULL DEFAULT 5368709120,
+    quota BIGINT NOT NULL DEFAULT 10737418240,
+    rate_limit INT DEFAULT 12,
     create_time INT NOT NULL default 0,
     active SMALLINT NOT NULL DEFAULT 1,
     PRIMARY KEY (domain)
 );
 
---  mailbox 
 CREATE TABLE IF NOT EXISTS mailbox (
     username varchar(255) NOT NULL,
     password varchar(255) NOT NULL,
@@ -29,7 +35,6 @@ CREATE TABLE IF NOT EXISTS mailbox (
     PRIMARY KEY (username)
 );
 
---  alias 
 CREATE TABLE IF NOT EXISTS alias (
     address varchar(255) NOT NULL,
     goto text NOT NULL,
@@ -40,9 +45,8 @@ CREATE TABLE IF NOT EXISTS alias (
     PRIMARY KEY (address)
 );
 
---  alias_domain 
 CREATE TABLE IF NOT EXISTS alias_domain (
-    alias_domain varchar(255) NOT NULL, 
+    alias_domain varchar(255) NOT NULL,
     target_domain varchar(255) NOT NULL,
     create_time int NOT NULL default 0,
     update_time int NOT NULL default 0,
