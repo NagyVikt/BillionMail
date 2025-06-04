@@ -19,24 +19,29 @@ services:
     container_name: billionmail-pgsql-billionmail-1
     hostname: pgsql
     volumes:
+      # Persist data
       - ./postgresql-data:/var/lib/postgresql/data
+      # Expose the init script so Postgres can run it once
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      # (Optionally) provide a Unix socket—BillionMail might use it if configured
+      - ./postgresql-socket:/var/run/postgresql
     environment:
       - TZ=${TZ}
-      - POSTGRES_DB=${DBNAME}         # “billionmail”
-      - POSTGRES_USER=${DBUSER}       # “billionmail”
-      - POSTGRES_PASSWORD=${DBPASS}   # “NauF7ysRYyt9HTOiOn4JjIAL3QcRZnzj”
+      - POSTGRES_DB=${DBNAME}
+      - POSTGRES_USER=${DBUSER}
+      - POSTGRES_PASSWORD=${DBPASS}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DBUSER} -d ${DBNAME}"]
       interval: 5s
       timeout: 5s
       retries: 5
       start_period: 10s
+    restart: always
     ports:
+      # Listen on localhost:25432 → container 5432, so only local apps can connect
       - "${SQL_PORT:-127.0.0.1:25432}:5432"
     networks:
       - coolify
-
 
   ##############################################################################
   # 2) Redis: for caching/queueing (used by BillionMail)
