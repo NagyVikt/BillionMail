@@ -14,28 +14,28 @@ services:
   ##############################################################################
   # 1) PostgreSQL: automatically create DB, user, and grant privileges via init.sql
   ##############################################################################
-pgsql-billionmail:
-  image: postgres:17.4-alpine
-  container_name: billionmail-pgsql-billionmail-1
-  hostname: pgsql
-  volumes:
-    - ./postgresql-data:/var/lib/postgresql/data
-    - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-  environment:
-    - TZ=${TZ}
-    - POSTGRES_DB=${DBNAME}         # “billionmail”
-    - POSTGRES_USER=${DBUSER}       # “billionmail”
-    - POSTGRES_PASSWORD=${DBPASS}   # “NauF7ysRYyt9HTOiOn4JjIAL3QcRZnzj”
-  healthcheck:
-    test: ["CMD-SHELL", "pg_isready -U ${DBUSER} -d ${DBNAME}"]
-    interval: 5s
-    timeout: 5s
-    retries: 5
-    start_period: 10s
-  ports:
-    - "${SQL_PORT:-127.0.0.1:25432}:5432"
-  networks:
-    - coolify
+  pgsql-billionmail:
+    image: postgres:17.4-alpine
+    container_name: billionmail-pgsql-billionmail-1
+    hostname: pgsql
+    volumes:
+      - ./postgresql-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - TZ=${TZ}
+      - POSTGRES_DB=${DBNAME}         # “billionmail”
+      - POSTGRES_USER=${DBUSER}       # “billionmail”
+      - POSTGRES_PASSWORD=${DBPASS}   # “NauF7ysRYyt9HTOiOn4JjIAL3QcRZnzj”
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DBUSER} -d ${DBNAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    ports:
+      - "${SQL_PORT:-127.0.0.1:25432}:5432"
+    networks:
+      - coolify
 
 
   ##############################################################################
