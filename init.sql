@@ -1,23 +1,19 @@
 -- Create the BillionMail and Roundcube databases
-CREATE DATABASE billionmail;
-CREATE DATABASE roundcube;
-
--- Create the BillionMail user (skip if created by POSTGRES_USER env variable)
 DO
 $$
 BEGIN
-   IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'billionmail') THEN
-      CREATE ROLE billionmail WITH LOGIN PASSWORD 'NauF7ysRYyt9HTOiOn4JjIAL3QcRZnzj';
+   IF NOT EXISTS (SELECT FROM pg_database WHERE datname = 'roundcube') THEN
+      CREATE DATABASE roundcube;
    END IF;
 END
 $$;
 
--- Grant all privileges to the user on both DBs
-GRANT ALL PRIVILEGES ON DATABASE billionmail TO billionmail;
+-- 2. Grant privileges to billionmail user
 GRANT ALL PRIVILEGES ON DATABASE roundcube TO billionmail;
 
--- Now connect to the billionmail DB and create the required tables
+-- 3. Connect to billionmail and create tables
 \connect billionmail
+-- Create the BillionMail user (skip if created by POSTGRES_USER env variable)
 
 -- Table: domain
 CREATE TABLE IF NOT EXISTS domain (
