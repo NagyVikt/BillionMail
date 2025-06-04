@@ -1,4 +1,4 @@
--- Create the BillionMail and Roundcube databases
+-- Only create roundcube; billionmail is created by the container!
 DO
 $$
 BEGIN
@@ -8,12 +8,11 @@ BEGIN
 END
 $$;
 
--- 2. Grant privileges to billionmail user
+-- Grant all privileges on roundcube to our user
 GRANT ALL PRIVILEGES ON DATABASE roundcube TO billionmail;
 
--- 3. Connect to billionmail and create tables
+-- Connect to billionmail to create tables
 \connect billionmail
--- Create the BillionMail user (skip if created by POSTGRES_USER env variable)
 
 -- Table: domain
 CREATE TABLE IF NOT EXISTS domain (
@@ -65,7 +64,3 @@ CREATE TABLE IF NOT EXISTS alias_domain (
     active smallint NOT NULL DEFAULT 1,
     PRIMARY KEY (alias_domain)
 );
-
--- You can add further BillionMail tables here as needed...
-
--- Done! Don't add Roundcube schema here; the container will create its own in the roundcube DB.
