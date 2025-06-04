@@ -52,7 +52,7 @@ services:
       - ./logs/rspamd:/var/log/rspamd
     restart: always
     networks:
-      - colify
+      - coolify
 
   dovecot-billionmail:
     image: billionmail/dovecot:1.3
