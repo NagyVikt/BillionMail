@@ -30,8 +30,8 @@ BEGIN
 END
 $$;
 
--- 3) Switch into the “billionmail” database so that subsequent DDL
---    (CREATE TABLE) runs in the correct database.
+-- 3) Connect into the “billionmail” database so that the following
+--    CREATE TABLE statements run in that database.
 \connect billionmail
 
 -- 4) Create the four tables if they do not already exist:
