@@ -16,7 +16,7 @@ services:
     ports:
       - "${SQL_PORT:-127.0.0.1:25432}:5432"
     networks:
-      - colify
+      - coolify
 
   redis-billionmail:
     image: redis:7.4.2-alpine
@@ -34,7 +34,7 @@ services:
     sysctls:
       - net.core.somaxconn=4096
     networks:
-      - colify
+      - coolify
 
   rspamd-billionmail:
     image: billionmail/rspamd:1.1
@@ -91,7 +91,7 @@ services:
         soft: 20000
         hard: 40000
     networks:
-      - colify
+      - coolify
 
   postfix-billionmail:
     image: billionmail/postfix:1.3
@@ -125,7 +125,7 @@ services:
       - "${SUBMISSION_PORT:-587}:587"
     restart: always
     networks:
-      - colify
+      - coolify
 
   webmail-billionmail:
     image: roundcube/roundcubemail:1.6.10-fpm-alpine
@@ -154,7 +154,7 @@ services:
       - ROUNDCUBEMAIL_REQUEST_PATH=/roundcube
     restart: always
     networks:
-      - colify
+      - coolify
 
   core-billionmail:
     image: billionmail/core:1.5
@@ -195,8 +195,8 @@ services:
       - "traefik.http.routers.billionmail.tls.certresolver=le"
     restart: always
     networks:
-      - colify
+      - coolify
 
 networks:
-  colify:
+  coolify:
     external: true
