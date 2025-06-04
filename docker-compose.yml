@@ -173,7 +173,7 @@ services:
   # 6) Roundcube webmail (PHP)
   ##############################################################################
   webmail-billionmail:
-    image: roundcube/roundcubemail:1.6.10-fpm-alpine
+    image: roundcube/roundcubemail:1.6.10-apache
     container_name: billionmail-webmail-billionmail-1
     hostname: roundcube
     depends_on:
